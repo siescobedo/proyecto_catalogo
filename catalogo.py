@@ -25,7 +25,7 @@ def procesar_organica(organica_path):
 
     rut_dict = {}
     for i in range(2,ws_o.max_row):
-        rut = ws_o[f"{organica_c['Rut']}{i}"]
+        rut = ws_o[f"{organica_c['RUT']}{i}"]
         ur = ws_o[f"{organica_c['UR']}{i}"]
         cargo = ws_o[f"{organica_c['Cargo']}{i}"]
         rut_dict[rut.value] = f"{ur.value}-{cargo.value}"
@@ -34,11 +34,11 @@ def procesar_organica(organica_path):
 
 def make_concat_dict(concat_dict, ws, catalogo_c):
   for i in range(2,ws.max_row):
-    ur = ws[f"{catalogo_c['CODIGOUR']}{i}"]
-    cargo = ws[f"{catalogo_c['CODIGOCARGO']}{i}"]
-    rol = ws[f"{catalogo_c['ROL']}{i}"]
-    app = ws[f"{catalogo_c['APLICACION']}{i}"]
-    perfil = ws[f"{catalogo_c['PERFIL']}{i}"]
+    ur = ws[f"{catalogo_c['UR']}{i}"]
+    cargo = ws[f"{catalogo_c['Cargo']}{i}"]
+    rol = ws[f"{catalogo_c['Rol']}{i}"]
+    app = ws[f"{catalogo_c['Aplicacion']}{i}"]
+    perfil = ws[f"{catalogo_c['Perfil']}{i}"]
 
     concat = f"{ur.value}-{cargo.value}"
     if concat not in concat_dict.keys():
