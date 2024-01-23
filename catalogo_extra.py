@@ -33,6 +33,9 @@ class BuscadorAccesosApp:
         self.procesar_button = ttk.Button(frame_bottom, text="Procesar", command=self.procesar)
         self.procesar_button.grid(row=1, column=0, columnspan=2, pady=10)
 
+        self.organica_procesada = ""
+        self.catalogo_procesado = ""
+
 
     def cargar_archivo(self, tipo):
         file_path = filedialog.askopenfilename(title=f"Seleccionar archivo {tipo.capitalize()}", filetypes=[(f"{tipo} files", f"*.{tipo}")])
@@ -53,33 +56,39 @@ class BuscadorAccesosApp:
             if cell.value != None:
                 organica_c[cell.value] = cell.column_letter
 
-        rut_dict = {}
+        self.rut_dict = {}
         for i in range(2,ws_o.max_row):
-            rut = ws_o[f"{organica_c['Rut']}{i}"]
+            rut = ws_o[f"{organica_c['RUT']}{i}"]
             ur = ws_o[f"{organica_c['UR']}{i}"]
             cargo = ws_o[f"{organica_c['Cargo']}{i}"]
-            rut_dict[rut.value] = f"{ur.value}-{cargo.value}"
+            self.rut_dict[rut.value] = f"{ur.value}-{cargo.value}"
         
-        return rut_dict
-
-    def make_concat_dict(self, concat_dict, ws, catalogo_c):
+        self.organica_procesada = organica_path
+    
+    def make_dicts(self, dicts, ws, catalogo_c):
+        [concat_dict, accesos] = dicts
         for i in range(2,ws.max_row):
-            ur = ws[f"{catalogo_c['CODIGOUR']}{i}"]
-            cargo = ws[f"{catalogo_c['CODIGOCARGO']}{i}"]
-            rol = ws[f"{catalogo_c['ROL']}{i}"]
-            app = ws[f"{catalogo_c['APLICACION']}{i}"]
-            perfil = ws[f"{catalogo_c['PERFIL']}{i}"]
+            ur = ws[f"{catalogo_c['UR']}{i}"]
+            cargo = ws[f"{catalogo_c['Cargo']}{i}"]
+            rol = ws[f"{catalogo_c['Rol']}{i}"]
+            app = ws[f"{catalogo_c['Aplicacion']}{i}"]
+            perfil = ws[f"{catalogo_c['Perfil']}{i}"]
 
             concat = f"{ur.value}-{cargo.value}"
             if concat not in concat_dict.keys():
-                concat_dict[concat] = {rol.value: [{'Aplicacion': app.value, 'Perfil': perfil.value}]}
+                concat_dict[concat] = set()
+                concat_dict[concat].add(rol.value)
             else:
-                if rol.value in concat_dict[concat].keys():
-                    concat_dict[concat][rol.value].append({'Aplicacion': app.value, 'Perfil': perfil.value})
-                else:
-                    concat_dict[concat][rol.value] = [{'Aplicacion': app.value, 'Perfil': perfil.value}]
+                concat_dict[concat].add(rol.value)
 
-        return concat_dict
+            if app.value!= None:
+                if rol.value not in accesos.keys():
+                    accesos[rol.value] = set()
+                    accesos[rol.value].add((app.value, perfil.value))
+                else:
+                    accesos[rol.value].add((app.value, perfil.value))
+        
+        return [concat_dict, accesos]
 
     def procesar_catalogo(self, catalogo_path):
         wb_c = openpyxl.load_workbook(catalogo_path)
@@ -92,23 +101,29 @@ class BuscadorAccesosApp:
             if cell.value != None:
                 catalogo_c[cell.value] = cell.column_letter
         
-        catalogo_dict = self.make_concat_dict(self.make_concat_dict(self.make_concat_dict({}, ws_c_1, catalogo_c),ws_c_2, catalogo_c), ws_c_3, catalogo_c)
+        catalogo_dict = self.make_dicts(self.make_dicts(self.make_dicts([{},{}], ws_c_1, catalogo_c),ws_c_2, catalogo_c), ws_c_3, catalogo_c)
 
-        return catalogo_dict
+        self.concat_dict = catalogo_dict[0]
+        self.accesos_dict = catalogo_dict[1]
+        self.catalogo_procesado = catalogo_path
 
     def procesar(self):
         rut_ingresado = self.rut_entry.get()
         if self.organica_path is not None and self.catalogo_path is not None and rut_ingresado:
-            rut_dict = self.procesar_organica(self.organica_path)
-            catalogo_dict = self.procesar_catalogo(self.catalogo_path)
+            if self.organica_path != self.organica_procesada:
+                self.procesar_organica(self.organica_path)
+            if self.catalogo_path != self.catalogo_procesado:
+                self.procesar_catalogo(self.catalogo_path)
 
-            roles = catalogo_dict.get(rut_dict.get(rut_ingresado, []), {})
+
+            roles = self.concat_dict.get(self.rut_dict.get(rut_ingresado, []), {})
 
             resultado_text = ""
-            for rol, accesos in roles.items():
+            for rol in roles:
                 resultado_text += f'Accesos del Rol: {rol}\n'
+                accesos = self.accesos_dict[rol]
                 for id, val in enumerate(accesos):
-                    resultado_text += f"{id+1}. Aplicación: {val['Aplicacion']}, Perfil: {val['Perfil']}\n"
+                    resultado_text += f"{id+1}. Aplicación: {val[0]}, Perfil: {val[1]}\n"
 
             # Mostrar resultado en una nueva ventana
             resultado_window = tk.Toplevel(self.root)
