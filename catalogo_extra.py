@@ -1,37 +1,41 @@
 import tkinter as tk
 from tkinter import ttk
 from tkinter import filedialog
+from tkinter import scrolledtext
 import openpyxl
 
 class BuscadorAccesosApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Buscador de Accesos")
+        self.root.geometry('350x250')
 
-        # Crear Frames para organizar la interfaz
-        frame_top = ttk.Frame(root)
-        frame_top.pack(padx=10, pady=10)
+        self.root.configure(bg='#ECECEC')
+        style = ttk.Style()
+        style.theme_create('custom', settings={
+            'TLabel': {'configure': {'background': '#EC0000', 'foreground': '#FFFFFF', 'font': ('Helvetica', 11)}},
+            'TFrame': {'configure': {'background': '#EC0000', 'borderwidth': 0, 'relief': 'flat'}},
+            'TButton': {'configure': {'background':'#DEEDF2', 'font': ('Helvetica', 11), 'anchor': 'center'}}}
+            )
 
-        frame_bottom = ttk.Frame(root)
-        frame_bottom.pack(padx=10, pady=10)
+        style.theme_use('custom')
 
-        # Botones para cargar archivos
-        self.organica_button = ttk.Button(frame_top, text="Seleccionar archivo de Orgánica Internos", command=self.cargar_organica)
-        self.organica_button.grid(row=0, column=0, padx=5, pady=5)
+        frame = ttk.Frame(root)
+        frame.pack(expand=True, fill="both", padx=20, pady=20)
 
-        self.catalogo_button = ttk.Button(frame_top, text="Seleccionar archivo de Catálogo", command=self.cargar_catalogo)
-        self.catalogo_button.grid(row=0, column=1, padx=5, pady=5)
+        ttk.Label(frame, text="Buscador de Accesos", font=("Helvetica", 16)).grid(row=0, column=0, columnspan=2, pady=10, sticky='en')
 
-        # Entrada para ingresar el RUT
-        self.rut_label = ttk.Label(frame_bottom, text="Ingrese un RUT:")
-        self.rut_label.grid(row=0, column=0, padx=5, pady=5)
+        ttk.Label(frame, text="Orgánica:").grid(row=1, column=0, padx=5, pady=5, sticky='e')
+        ttk.Button(frame, text="Seleccionar archivo", command=self.cargar_organica, cursor="hand2").grid(row=1, column=1, padx=5, pady=5, sticky='ew')
+        
+        ttk.Label(frame, text="Catálogo:").grid(row=2, column=0, padx=5, pady=5, sticky='e')
+        ttk.Button(frame, text="Seleccionar archivo", command=self.cargar_catalogo, cursor="hand2").grid(row=2, column=1, padx=5, pady=5, sticky='ew')
 
-        self.rut_entry = ttk.Entry(frame_bottom, font=("Helvetica", 12))
-        self.rut_entry.grid(row=0, column=1, padx=5, pady=5)
+        ttk.Label(frame, text="Ingrese RUT:").grid(row=3, column=0, padx=5, pady=5, sticky='e')
+        self.rut_entry = ttk.Entry(frame, font=("Helvetica", 11))
+        self.rut_entry.grid(row=3, column=1, padx=5, pady=5, sticky='ew')
 
-        # Botón para iniciar el procesamiento
-        self.procesar_button = ttk.Button(frame_bottom, text="Procesar", command=self.procesar)
-        self.procesar_button.grid(row=1, column=0, columnspan=2, pady=10)
+        ttk.Button(frame, text="Buscar", command=self.procesar,cursor="hand2", width=20).grid(row=4, column=1, columnspan=2, pady=10, sticky='n')
 
         self.organica_procesada = ""
         self.catalogo_procesado = ""
@@ -107,16 +111,39 @@ class BuscadorAccesosApp:
         self.accesos_dict = catalogo_dict[1]
         self.catalogo_procesado = catalogo_path
 
+    def mostrar_resultados(self, resultado_text):
+        # Mostrar resultado en una nueva ventana
+        resultado_window = tk.Toplevel(self.root)
+        resultado_window.title("Resultados")
+
+        resultado_window.configure(bg='#ECECEC')
+
+        style = ttk.Style()
+        style.theme_use('custom')
+
+        frame = ttk.Frame(resultado_window)
+        frame.pack(expand=1, fill="both", padx=25, pady=25)
+
+        ttk.Label(frame, text=f"Accesos {self.rut}", font=("Helvetica", 16)).pack(pady=20)
+
+        scroll_text = scrolledtext.ScrolledText(frame, wrap=tk.WORD, width=40, height=10, font=("Helvetica", 11))
+        scroll_text.insert(tk.END, resultado_text)
+        scroll_text.config(padx=10, pady=10)
+        scroll_text.pack(expand=True, fill="both", padx=15, pady=15)
+
+        resultado_window.protocol("WM_DELETE_WINDOW", resultado_window.destroy)  # Maneja el cierre de la ventana
+
+
     def procesar(self):
-        rut_ingresado = self.rut_entry.get()
-        if self.organica_path is not None and self.catalogo_path is not None and rut_ingresado:
+        self.rut = self.rut_entry.get()
+        if self.organica_path is not None and self.catalogo_path is not None and self.rut:
             if self.organica_path != self.organica_procesada:
                 self.procesar_organica(self.organica_path)
             if self.catalogo_path != self.catalogo_procesado:
                 self.procesar_catalogo(self.catalogo_path)
 
 
-            roles = self.concat_dict.get(self.rut_dict.get(rut_ingresado, []), {})
+            roles = self.concat_dict.get(self.rut_dict.get(self.rut, []), {})
 
             resultado_text = ""
             for rol in roles:
@@ -124,11 +151,8 @@ class BuscadorAccesosApp:
                 accesos = self.accesos_dict[rol]
                 for id, val in enumerate(accesos):
                     resultado_text += f"{id+1}. Aplicación: {val[0]}, Perfil: {val[1]}\n"
-
-            # Mostrar resultado en una nueva ventana
-            resultado_window = tk.Toplevel(self.root)
-            resultado_label = tk.Label(resultado_window, text=resultado_text, padx=10, pady=10)
-            resultado_label.pack()
+                resultado_text += f"\n\n"
+            self.mostrar_resultados(resultado_text)
         else:
             tk.messagebox.showwarning("Error", "Debe seleccionar ambos archivos y proporcionar un RUT.")
 
