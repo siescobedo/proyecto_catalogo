@@ -99,7 +99,7 @@ class BuscadorAccesosApp:
         ws_c = wb_c.active
 
         catalogo_c = {}
-        for cell in wb_c[1]:
+        for cell in ws_c[1]:
             if cell.value != None:
                 catalogo_c[cell.value] = cell.column_letter
         
