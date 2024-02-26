@@ -62,7 +62,7 @@ class BuscadorAccesosApp:
 
         self.rut_dict = {}
         for i in range(2,ws_o.max_row):
-            rut = ws_o[f"{organica_c['RUT']}{i}"]
+            rut = ws_o[f"{organica_c['Rut']}{i}"]
             ur = ws_o[f"{organica_c['UR']}{i}"]
             cargo = ws_o[f"{organica_c['Cargo']}{i}"]
             self.rut_dict[rut.value] = f"{ur.value}-{cargo.value}"
@@ -72,11 +72,11 @@ class BuscadorAccesosApp:
     def make_dicts(self, dicts, ws, catalogo_c):
         [concat_dict, accesos] = dicts
         for i in range(2,ws.max_row):
-            ur = ws[f"{catalogo_c['UR']}{i}"]
-            cargo = ws[f"{catalogo_c['Cargo']}{i}"]
-            rol = ws[f"{catalogo_c['Rol']}{i}"]
-            app = ws[f"{catalogo_c['Aplicacion']}{i}"]
-            perfil = ws[f"{catalogo_c['Perfil']}{i}"]
+            ur = ws[f"{catalogo_c['CODIGOUR']}{i}"]
+            cargo = ws[f"{catalogo_c['CODIGOCARGO']}{i}"]
+            rol = ws[f"{catalogo_c['ROL']}{i}"]
+            app = ws[f"{catalogo_c['APLICACION']}{i}"]
+            perfil = ws[f"{catalogo_c['PERFIL']}{i}"]
 
             concat = f"{ur.value}-{cargo.value}"
             if concat not in concat_dict.keys():
