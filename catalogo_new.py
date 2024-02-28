@@ -77,20 +77,22 @@ class BuscadorAccesosApp:
             rol = ws[f"{catalogo_c['ROL']}{i}"]
             app = ws[f"{catalogo_c['APLICACION']}{i}"]
             perfil = ws[f"{catalogo_c['PERFIL']}{i}"]
+            seccion = ws[f"{catalogo_c['SECCION']}{i}"]
 
             concat = f"{ur.value}-{cargo.value}"
             if concat not in concat_dict.keys():
                 concat_dict[concat] = set()
-                concat_dict[concat].add(rol.value)
+                concat_dict[concat].add(f"{rol.value}; {seccion.value}")
             else:
-                concat_dict[concat].add(rol.value)
+                concat_dict[concat].add(f"{rol.value}; {seccion.value}")
 
+            concat2 = f"{rol.value}; {seccion.value}"
             if app.value!= None:
-                if rol.value not in accesos.keys():
-                    accesos[rol.value] = set()
-                    accesos[rol.value].add((app.value, perfil.value))
+                if concat2 not in accesos.keys():
+                    accesos[concat2] = set()
+                    accesos[concat2].add((app.value, perfil.value))
                 else:
-                    accesos[rol.value].add((app.value, perfil.value))
+                    accesos[concat2].add((app.value, perfil.value))
         
         return [concat_dict, accesos]
 
