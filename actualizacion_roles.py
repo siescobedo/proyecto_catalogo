@@ -77,7 +77,12 @@ class ActualizadorRolesApp:
             gls_ur = ws_o[f"{organica_c['GlsUR']}{i}"]
             concat = f"{ur.value}-{cargo.value}"
             if concat in self.organica_concats:
-                if self.concats_dict[concat] != {'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}:
+                agregar = True
+                for i in self.concats_dict[concat]:
+                    if i == {'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}:
+                        agregar = False
+                
+                if agregar:
                     self.concats_dict[concat].append({'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value})
             else:
                 self.organica_concats.add(concat)
