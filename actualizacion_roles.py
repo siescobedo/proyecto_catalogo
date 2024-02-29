@@ -77,10 +77,11 @@ class ActualizadorRolesApp:
             gls_ur = ws_o[f"{organica_c['GlsUR']}{i}"]
             concat = f"{ur.value}-{cargo.value}"
             if concat in self.organica_concats:
-                self.concats_dict[f"{ur.value}-{cargo.value}"].append({'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value})
+                if self.concats_dict[concat] != {'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}:
+                    self.concats_dict[concat].append({'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value})
             else:
-                self.organica_concats.add(f"{ur.value}-{cargo.value}")
-                self.concats_dict[f"{ur.value}-{cargo.value}"] = [{'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}]
+                self.organica_concats.add(concat)
+                self.concats_dict[concat] = [{'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}]
 
         self.organica_procesada = organica_path
 
