@@ -70,14 +70,18 @@ class ActualizadorRolesApp:
         self.organica_concats = set()
         self.concats_dict = {}
 
-        for i in range(2,ws_o.max_row):
+        for i in range(2,ws_o.max_row+1):
             ur = ws_o[f"{organica_c['UR']}{i}"]
             cargo = ws_o[f"{organica_c['Cargo']}{i}"]
             gls_cargo = ws_o[f"{organica_c['GlsCargo']}{i}"]
             gls_ur = ws_o[f"{organica_c['GlsUR']}{i}"]
-            self.organica_concats.add(f"{ur.value}-{cargo.value}")
-            self.concats_dict[f"{ur.value}-{cargo.value}"] = {'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}
-        
+            concat = f"{ur.value}-{cargo.value}"
+            if concat in self.organica_concats:
+                self.concats_dict[f"{ur.value}-{cargo.value}"].append({'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value})
+            else:
+                self.organica_concats.add(f"{ur.value}-{cargo.value}")
+                self.concats_dict[f"{ur.value}-{cargo.value}"] = [{'CODIGOCARGO': cargo.value, 'CARGO': gls_cargo.value, 'CODIGOUR': ur.value, 'UNIRELUR': gls_ur.value}]
+
         self.organica_procesada = organica_path
 
     def procesar_catalogo(self, catalogo_path):
@@ -92,7 +96,7 @@ class ActualizadorRolesApp:
 
         self.catalogo_concats = set()
 
-        for i in range(2,self.ws_c.max_row):
+        for i in range(2,self.ws_c.max_row+1):
             ur = self.ws_c[f"{self.catalogo_c['CODIGOUR']}{i}"]
             cargo = self.ws_c[f"{self.catalogo_c['CODIGOCARGO']}{i}"]
             self.catalogo_concats.add(f"{ur.value}-{cargo.value}")
@@ -115,18 +119,18 @@ class ActualizadorRolesApp:
         
         self.actualizar_progreso("Agregando nuevas concatenaciones...")
         for concatenacion_key in roles:
-            concatenacion = self.concats_dict[concatenacion_key]
+            concatenacion_contenido = self.concats_dict[concatenacion_key]
 
             nueva_fila = [None] * len(self.catalogo_c)
             
-            for col_name in concatenacion.keys():
-                if col_name in self.catalogo_c.keys():
-                    col_letter = self.catalogo_c[col_name]
-                    col_index = column_index_from_string(col_letter)
-                    nueva_fila[col_index - 1] = concatenacion[col_name]
-
+            for concatenacion in concatenacion_contenido:
+                for col_name in concatenacion.keys():
+                    if col_name in self.catalogo_c.keys():
+                        col_letter = self.catalogo_c[col_name]
+                        col_index = column_index_from_string(col_letter)
+                        nueva_fila[col_index - 1] = concatenacion[col_name]
             
-            hoja_nueva.append(nueva_fila)
+                hoja_nueva.append(nueva_fila)
 
         self.actualizar_progreso("Guardando nuevo archivo...")
         # guardar nuevo archivo

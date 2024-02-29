@@ -61,7 +61,7 @@ class BuscadorAccesosApp:
                 organica_c[cell.value] = cell.column_letter
 
         self.rut_dict = {}
-        for i in range(2,ws_o.max_row):
+        for i in range(2,ws_o.max_row+1):
             rut = ws_o[f"{organica_c['Rut']}{i}"]
             ur = ws_o[f"{organica_c['UR']}{i}"]
             cargo = ws_o[f"{organica_c['Cargo']}{i}"]
@@ -71,7 +71,7 @@ class BuscadorAccesosApp:
     
     def make_dicts(self, dicts, ws, catalogo_c):
         [concat_dict, accesos] = dicts
-        for i in range(2,ws.max_row):
+        for i in range(2,ws.max_row+1):
             ur = ws[f"{catalogo_c['CODIGOUR']}{i}"]
             cargo = ws[f"{catalogo_c['CODIGOCARGO']}{i}"]
             rol = ws[f"{catalogo_c['ROL']}{i}"]
